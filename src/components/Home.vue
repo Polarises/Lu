@@ -21,6 +21,7 @@
                  :collapse="isCollapse"
                  :collapse-transition='false'
                  :router="true"
+                 :default-active="activePath"
         >
 
           <!--            一级菜单-->
@@ -34,8 +35,9 @@
             </template>
             <!--            二级菜单-->
             <el-menu-item :index=" '/' + subItem.path "
-                         v-for="subItem in item.children"
-                        :key="subItem.id"
+                          v-for="subItem in item.children"
+                          :key="subItem.id"
+                          @click="saveNavState('/' + subItem.path)"
             >
               <template slot="title">
                 <i class="el-icon-menu"></i>
@@ -58,6 +60,7 @@ export default {
   name: 'Home',
   created () {
     this.getMenuList()
+    this.activePath = sessionStorage.getItem('path')
   },
   data() {
     return {
@@ -69,7 +72,8 @@ export default {
         102: 'el-icon-s-order',
         145: 'el-icon-s-marketing'
       },
-      isCollapse: false
+      isCollapse: true,
+      activePath: ''
     }
   },
   methods: {
@@ -85,6 +89,10 @@ export default {
     },
     toggleCollapse() {
       this.isCollapse = !this.isCollapse
+    },
+    saveNavState(path) {
+      sessionStorage.setItem('path', path)
+      this.activePath = path
     }
   }
 }
@@ -127,7 +135,7 @@ export default {
   margin-right: 10px;
 }
 .toggle-button {
-background-color: #4a5064;
+  background-color: #4a5064;
   text-align: center;
   letter-spacing: 0.2em;
   color: #fff;

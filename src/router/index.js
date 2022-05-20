@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Home from '../components/Home.vue'
 import Login from '../components/Login'
 import Welcome from '../components/Welcome'
+import Users from '../pages/User/Users'
 import axios from 'axios'
 // 配置请求的根路径
 axios.defaults.baseURL = 'http://127.0.0.1:8888/api/private/v1/'
@@ -21,9 +22,14 @@ const routes = [
     path: '/home',
     component: Home,
     redirect: '/welcome',
-    children: [{
-      path: '/welcome', component: Welcome
-    }]
+    children: [
+      {
+        path: '/welcome', component: Welcome
+      },
+      {
+        path: '/users', component: Users
+      }
+    ]
   }
 ]
 
