@@ -72,7 +72,7 @@ export default {
         102: 'el-icon-s-order',
         145: 'el-icon-s-marketing'
       },
-      isCollapse: true,
+      isCollapse: false,
       activePath: ''
     }
   },
@@ -85,7 +85,6 @@ export default {
       const { data: res } = await this.$http.get('menus')
       if (res.meta.status !== 200) return this.$message.error('获取列表失败')
       this.meanList = res.data
-      console.log(this.meanList)
     },
     toggleCollapse() {
       this.isCollapse = !this.isCollapse

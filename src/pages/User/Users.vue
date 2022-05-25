@@ -1,10 +1,6 @@
 <template>
   <div>
-    <el-breadcrumb separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>用户管理</el-breadcrumb-item>
-      <el-breadcrumb-item>用户列表</el-breadcrumb-item>
-    </el-breadcrumb>
+    <Breadcrumb/>
     <el-card class="box-card">
       <el-row :gutter="20">
         <el-col :span="10" >
@@ -59,9 +55,18 @@
             <el-button type="primary" icon="el-icon-edit" circle
                        size="mini"
                        @click="showEditDialog(scope.row.id)"></el-button>
-            <el-button type="danger" icon="el-icon-delete" circle size="mini" @click="removeUserById(scope.row.id)"> </el-button>
-            <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
-              <el-button type="warning" icon="el-icon-setting" size="mini" circle></el-button>
+            <el-button type="danger"
+                       icon="el-icon-delete" circle size="mini" @click="removeUserById(scope.row.id)">
+            </el-button>
+            <el-tooltip effect="dark"
+                        content="分配角色"
+                        placement="top"
+                        :enterable="false"
+            >
+<!--              第三个按钮-->
+              <el-button type="warning" icon="el-icon-setting" size="mini" circle
+                         @click="setRoleDialogVisible(scope.row)"
+              ></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -126,12 +131,38 @@
           <el-button type="primary" @click="editUserInfo">确 定</el-button>
         </span>
       </el-dialog>
+      <!--      分配角色的对话框-->
+      <el-dialog
+        title="修改用户"
+        :visible.sync="roleVisible"
+        width="50%"
+        @close="setRoleDialogClosed"
+      >
+        <span>当前用户  {{userInfo.username}}</span><br/>
+        <span>当前角色  {{userInfo.role_name}}</span><br/>
+        <span>分配新角色
+        <el-select  v-model="selectedRoleId" placeholder="请选择">
+          <el-option v-for="item in rolesList" :key="item.id" :label="item.roleName" :value="item.id">
+          </el-option>
+        </el-select>
+        </span>
+        <span slot="footer" >
+          <el-button
+            @click="roleVisible = false">取 消
+          </el-button>
+         <el-button type="primary" @click="saveRoleInf">确 定</el-button>
+        </span>
+      </el-dialog>
     </el-card>
   </div>
 </template>
 
 <script>
+import Breadcrumb from '../../components/Breadcrumb'
 export default {
+  components: {
+    Breadcrumb
+  },
   created() {
     this.getUserList()
   },
@@ -164,6 +195,7 @@ export default {
       total: 0,
       addVisible: false,
       editVisible: false,
+      roleVisible: false,
       addForm: {
         username: '',
         password: '',
@@ -199,7 +231,10 @@ export default {
           { validator: checkMobile, trigger: 'blur' }
         ]
       },
-      editForm: {}
+      editForm: {},
+      userInfo: {},
+      rolesList: [],
+      selectedRoleId: ''
     }
   },
   name: 'Users',
@@ -281,6 +316,35 @@ export default {
         if (res.meta.status !== 200) return this.$message.error('删除失败')
         await this.getUserList()
       }
+    },
+    //
+    async setRoleDialogVisible (userinfo) {
+      console.log(userinfo)
+      this.userInfo = userinfo
+      this.roleVisible = true
+      const { data: res } = await this.$http.get('roles')
+      if (res.meta.status !== 200) return this.$message.error('获取角色列表失败！')
+      this.$message.success('获取角色列表成功！')
+      this.rolesList = res.data
+      console.log(this.rolesList)
+    },
+    async saveRoleInf() {
+      if (!this.selectedRoleId) {
+        return this.$message.error('请选择一个角色！')
+      }
+      const { data: result } = await this.$http.put(`users/${this.userInfo.id}/role`, { rid: this.selectedRoleId })
+      if (result.meta.status !== 200) {
+        return this.$message.error('更新角色失败！')
+      }
+      this.$message.success('更新角色成功！')
+      // 刷新当前角色列表
+      await this.getUserList()
+      // 隐藏当前分配角色对话框
+      this.roleVisible = false
+    },
+    setRoleDialogClosed() {
+      this.selectedRoleId = ''
+      this.userInfo = {}
     }
     //  大括号截止到这
   }
@@ -288,5 +352,8 @@ export default {
 </script>
 
 <style scoped>
-
+span{
+  display: block;
+  margin-top: 5px;
+}
 </style>
